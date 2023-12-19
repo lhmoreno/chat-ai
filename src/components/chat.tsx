@@ -1,17 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
-import {
-  Paperclip,
-  SendHorizonal,
-  Clock,
-  Check,
-  CheckCheck,
-} from "lucide-react";
+import { useState } from "react";
+import { SendHorizonal, Clock, Check, CheckCheck } from "lucide-react";
 import dayjs from "dayjs";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "./ui/textarea";
+import { cn } from "@/lib/utils";
+
+interface Ai {
+  name: string;
+  avatar: string;
+}
+
+const ai: Ai = {
+  name: "Assistant AI",
+  avatar: "/avatar.png",
+};
 
 interface Message {
   id: string;
@@ -34,51 +40,88 @@ export default function Chat() {
       status: "pending",
     },
   ]);
-  const inputMessageRef = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState("");
 
   async function handleSubmitMessage(
     ev: React.FormEvent<HTMLFormElement> & React.FormEvent<HTMLDivElement>
   ) {
     ev.preventDefault();
 
-    const formData = new FormData(ev.currentTarget);
-    const message = String(formData.get("message")).trim();
+    sendMessage();
+  }
 
-    if (message === "") {
+  async function sendMessage() {
+    if (message.trim() === "") {
       return;
     }
 
-    const data = {
-      createdAt: new Date().toISOString(),
-      status: "pending" as "pending" | "sented" | "delivered" | "readed",
-      content: message,
-    };
+    setMessages((v) => {
+      const list: Message[] = [
+        ...v,
+        {
+          id: String(Math.random() * 10000),
+          content: message,
+          status: "pending",
+          timestamp: new Date(),
+        },
+      ];
 
-    // const messagesRef = ref(database, "messages");
-    // const reference = push(messagesRef, data);
+      return list;
+    });
 
-    // setMessages((v) => {
-    //   const list: Message[] = [
-    //     ...v,
-    //     {
-    //       id: reference.key ?? "",
-    //       ...data,
-    //       createdAt: new Date(data.createdAt),
-    //     },
-    //   ];
+    window.setTimeout(() => {
+      setMessages((v) => {
+        const list = [...v];
 
-    //   return list;
-    // });
+        list[list.length - 1] = {
+          ...list[list.length - 1],
+          status: "sented",
+        };
 
-    if (inputMessageRef?.current?.value) {
-      inputMessageRef.current.value = "";
-    }
+        return list;
+      });
+    }, 500);
+
+    window.setTimeout(() => {
+      setMessages((v) => {
+        const list = [...v];
+
+        list[list.length - 1] = {
+          ...list[list.length - 1],
+          status: "delivered",
+        };
+
+        return list;
+      });
+    }, 1200);
+
+    window.setTimeout(() => {
+      setMessages((v) => {
+        const list = [...v];
+
+        list[list.length - 1] = {
+          ...list[list.length - 1],
+          status: "readed",
+        };
+
+        return list;
+      });
+    }, 1500);
+
+    setMessage("");
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <ScrollArea id="scroll-area" className="flex-1 bg-neutral-700">
-        <div className="mx-auto max-w-5xl h-full pb-6 px-3 flex flex-col gap-2 justify-end">
+    <div className="h-screen flex flex-col">
+      <header className="w-full max-w-4xl mx-auto px-4 py-2 flex items-center border-b border-border">
+        <Avatar className="w-10 h-10">
+          <AvatarImage src={ai.avatar} />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        <h2 className="ml-4 font-bold">{ai.name}</h2>
+      </header>
+      <ScrollArea id="scroll-area" className="flex-1 w-full max-w-4xl mx-auto">
+        <div className="py-3 px-4 flex flex-col gap-2 justify-end">
           {messages.map((message) => {
             const Icon = () => {
               if (message.status === "pending") {
@@ -99,10 +142,10 @@ export default function Chat() {
             return (
               <div
                 key={message.id}
-                className={`
-                    "bg-emerald-200 py-1 px-2 mr-2 rounded-lg flex gap-2 w-fit max-w-xl self-end shadow"
-                    ${!message.status && "self-start bg-white"}
-                  `}
+                className={cn(
+                  "bg-secondary py-1 px-2 mr-2 rounded-lg flex gap-2 w-fit max-w-xl shadow",
+                  message.status && "self-end bg-foreground text-card"
+                )}
               >
                 <p className="break-words overflow-hidden">{message.content}</p>
                 <span className="-mb-0.5 self-end text-xs text-stone-500 flex items-center gap-1">
@@ -114,24 +157,32 @@ export default function Chat() {
           })}
         </div>
       </ScrollArea>
-      <div className="p-4 flex items-center gap-4 bg-neutral-800">
-        <Button variant="ghost">
-          <Paperclip className="w-5 h-5" />
-        </Button>
+      <div className="w-full max-w-4xl mx-auto px-4 py-2">
         <form
-          className="flex-1 flex items-center gap-4"
+          className="flex items-center gap-4"
           onSubmit={handleSubmitMessage}
         >
-          <Input
-            ref={inputMessageRef}
-            className="text-base"
-            name="message"
-            placeholder="Type a message"
-          />
-          <Button type="submit">
-            <SendHorizonal className="w-5 h-5" />
-          </Button>
+          <div className="w-full p-1.5 flex items-center gap-3 rounded-lg border border-input ring-offset-background  focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:outline-none">
+            <Textarea
+              className="min-h-0 border-0 focus-visible:ring-offset-0 focus-visible:ring-0"
+              placeholder="Type a message"
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  sendMessage();
+                }
+              }}
+            />
+            <Button type="submit" className="p-2 w-10 h-10">
+              <SendHorizonal className="w-full h-full" />
+            </Button>
+          </div>
         </form>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Create by lhmoreno
+        </p>
       </div>
     </div>
   );
