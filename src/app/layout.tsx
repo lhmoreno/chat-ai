@@ -3,6 +3,8 @@ import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
+import { Session } from "next-auth";
+import { SessionProvider } from "@/components/session-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -16,8 +18,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: {
+    session?: Session;
+  };
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -33,7 +39,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SessionProvider session={params.session}>{children}</SessionProvider>
         </ThemeProvider>
       </body>
     </html>

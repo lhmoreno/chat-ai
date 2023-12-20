@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   SendHorizonal,
   Clock,
@@ -34,16 +33,9 @@ const ai: Ai = {
   avatar: "/avatar.png",
 };
 
-interface Message {
-  id: string;
-  timestamp: Date;
-  content: string;
-  status?: "pending" | "sented" | "delivered" | "readed";
-}
-
 export default function Chat() {
   const { setTheme } = useTheme();
-  const { messages, input, handleInputChange, handleSubmit, append } = useChat({
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
     api: "/api/chat",
   });
 
@@ -79,7 +71,7 @@ export default function Chat() {
         </DropdownMenu>
       </header>
       <ScrollArea id="scroll-area" className="flex-1 w-full max-w-4xl mx-auto">
-        <div className="py-3 px-4 flex flex-col gap-2 justify-end">
+        <div className="py-3 px-4 flex flex-col gap-3 justify-end">
           {messages.map((message) => {
             const Icon = () => {
               // if (message.status === "pending") {
@@ -105,7 +97,9 @@ export default function Chat() {
                   message.role === "user" && "self-end bg-foreground text-card"
                 )}
               >
-                <p className="break-words overflow-hidden">{message.content}</p>
+                <p className="text-sm break-words overflow-hidden">
+                  {message.content}
+                </p>
                 <span className="-mb-0.5 self-end text-xs text-stone-500 flex items-center gap-1">
                   {dayjs(message.createdAt).format("HH[:]mm")}
                   <Icon />
