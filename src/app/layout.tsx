@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { Session } from "next-auth";
 import { SessionProvider } from "@/components/session-provider";
@@ -33,14 +32,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SessionProvider session={params.session}>{children}</SessionProvider>
-        </ThemeProvider>
+        <SessionProvider session={params.session}>{children}</SessionProvider>
       </body>
     </html>
   );
