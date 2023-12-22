@@ -1,122 +1,83 @@
 "use client";
 
-import {
-  SendHorizonal,
-  Clock,
-  Check,
-  CheckCheck,
-  Sun,
-  Moon,
-} from "lucide-react";
-import dayjs from "dayjs";
-import { Button } from "./ui/button";
-import { ScrollArea } from "./ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { Textarea } from "./ui/textarea";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { useChat } from "ai/react";
+import { Button } from "./ui/button";
+import { ArrowUpIcon, PaperclipIcon } from "lucide-react";
 
-interface Ai {
-  name: string;
-  avatar: string;
+export interface Message {
+  id: string;
+  type: "user" | "assistant";
+  message: string;
 }
 
-const ai: Ai = {
-  name: "Assistant AI",
-  avatar: "/avatar.png",
-};
+interface ChatProps {
+  chats: Message[];
+}
 
-export default function Chat() {
-  const { setTheme } = useTheme();
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: "/api/chat",
-  });
+export function Chat({ chats }: ChatProps) {
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollAreaViewPort = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
+
+      console.log(scrollAreaViewPort);
+      if (scrollAreaViewPort) {
+        scrollAreaViewPort.scrollTop = scrollAreaViewPort.scrollHeight;
+      }
+    }
+  }, []);
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="w-full max-w-4xl mx-auto px-4 py-2 flex justify-between items-center border-b border-border">
-        <div className="flex items-center">
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={ai.avatar} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <h2 className="ml-4 font-bold">{ai.name}</h2>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-background">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              Light
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              Dark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
-              System
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
-      <ScrollArea id="scroll-area" className="flex-1 w-full max-w-4xl mx-auto">
-        <div className="py-3 px-4 flex flex-col gap-3 justify-end">
-          {messages.map((message) => {
-            const Icon = () => {
-              // if (message.status === "pending") {
-              //   return <Clock className="w-3 h-3" />;
-              // }
-              // if (message.status === "sented") {
-              //   return <Check className="w-4 h-4" />;
-              // }
-              // if (message.status === "delivered") {
-              //   return <CheckCheck className="w-4 h-4" />;
-              // }
-              // if (message.status === "readed") {
-              //   return <CheckCheck className="w-4 h-4 text-blue-500" />;
-              // }
-              return null;
-            };
-
+    <div className="h-screen w-full flex flex-col justify-between">
+      <div className="h-14 mb-1.5 p-2 font-semibold" />
+      <ScrollArea ref={scrollAreaRef} className="h-full" type="auto">
+        <div className="max-w-[48rem] mx-auto px-5 pb-9">
+          {chats.map((chat) => {
             return (
-              <div
-                key={message.id}
-                className={cn(
-                  "bg-secondary py-1 px-2 mr-2 rounded-lg flex gap-2 w-fit max-w-xl shadow",
-                  message.role === "user" && "self-end bg-foreground text-card"
-                )}
-              >
-                <p className="text-sm break-words overflow-hidden">
-                  {message.content}
-                </p>
-                <span className="-mb-0.5 self-end text-xs text-stone-500 flex items-center gap-1">
-                  {dayjs(message.createdAt).format("HH[:]mm")}
-                  <Icon />
-                </span>
+              <div key={chat.id} className="px-4 py-6 flex gap-3">
+                <Image
+                  src={
+                    chat.type === "user"
+                      ? "https://avatars.githubusercontent.com/u/116765970?v=4"
+                      : "/avatar.png"
+                  }
+                  alt="avatar"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 rounded-full"
+                />
+                <div>
+                  <strong className="font-semibold">
+                    {chat.type === "user" ? "You" : "Chat AI"}
+                  </strong>
+                  <div className="flex flex-col gap-3 text-gray-300">
+                    {chat.message.split("\n").map((text, index) => {
+                      return <p key={index}>{text}</p>;
+                    })}
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       </ScrollArea>
-      <div className="w-full max-w-4xl mx-auto px-4 py-2">
-        <form className="flex items-center gap-4" onSubmit={handleSubmit}>
-          <div className="w-full p-1.5 flex items-center gap-3 rounded-lg border border-input ring-offset-background  focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:outline-none">
+      <div>
+        <form className="max-w-3xl mx-auto">
+          <div className="relative border border-border text-white rounded-2xl">
+            <Button className="absolute h-fit p-0 bottom-3 left-4">
+              <PaperclipIcon className="w-6 h-6" />
+            </Button>
             <Textarea
-              className="min-h-0 border-0 focus-visible:ring-offset-0 focus-visible:ring-0"
-              placeholder="Type a message"
-              value={input}
-              onChange={handleInputChange}
+              className="min-h-0 h-[52px] max-h-[200px] border-0 ring-0 resize-none pl-[55px] pr-12 py-3.5 rounded-2xl focus-visible:ring-0 placeholder-white/50 overflow-y-hidden"
+              placeholder="Type a message..."
+              // value={input}
+              // onChange={handleInputChange}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
@@ -129,14 +90,20 @@ export default function Chat() {
                 }
               }}
             />
-            <Button type="submit" className="p-2 w-10 h-10">
-              <SendHorizonal className="w-full h-full" />
+            <Button
+              type="submit"
+              className="absolute h-fit p-1.5 bottom-3 right-3 rounded-lg text-black transition-colors enabled:bg-white enabled:hover:bg-gray-400 disabled:bg-white disabled:opacity-20 disabled:text-gray-400"
+              // disabled
+            >
+              <ArrowUpIcon className="w-5 h-5" />
             </Button>
           </div>
         </form>
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          Create by lhmoreno
-        </p>
+        <div className="w-full px-[60px] py-2 text-center text-xs text-gray-300">
+          <span>
+            Chat AI can make mistakes. Consider checking important information.
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -9,6 +9,11 @@
 
     --accent: #202123;
     --accent-foreground: #fafafa;
+
+    --border: #ffffff1a;
+    --border-hover: #ffffff4d;
+
+    --input: #d9d9e333;
   }
 }
 

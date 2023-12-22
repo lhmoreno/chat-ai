@@ -21,7 +21,7 @@ module.exports = {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
-        border: "var(--border)",
+        border: { DEFAULT: "var(--border)", hover: "var(--border-hover)" },
         input: "var(--input)",
         ring: "var(--ring)",
         background: "var(--background)",

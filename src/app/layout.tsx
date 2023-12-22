@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Session } from "next-auth";
 import { SessionProvider } from "@/components/session-provider";
+import { SideBar } from "@/components/sidebar";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -28,11 +29,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased flex",
           fontSans.variable
         )}
       >
-        <SessionProvider session={params.session}>{children}</SessionProvider>
+        <SessionProvider session={params.session}>
+          <SideBar />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

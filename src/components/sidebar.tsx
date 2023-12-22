@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
 
 interface Chat {
   id: string;
@@ -37,14 +38,21 @@ const chats: Chat[] = Array.from({ length: 5 }).map((v, i) => {
 
 export function SideBar() {
   const { data, status } = useSession();
+  const pathname = usePathname();
 
   return (
     <div className="w-[260px] bg-black">
       <nav className="flex h-full w-full flex-col px-3 pb-3.5">
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col">
+          <Link
+            href="/"
+            className="my-3.5 text-xl text-center font-bold transition-all duration-500 hover:text-accent-foreground hover:underline"
+          >
+            Chat AI
+          </Link>
           <Link
             href="/ai"
-            className="group h-10 mt-3.5 px-2 flex items-center gap-2 rounded-lg transition-opacity duration-500 hover:bg-accent"
+            className="group h-10 px-2 flex items-center gap-2 rounded-lg transition-opacity duration-500 hover:bg-accent"
           >
             <Image
               src="/avatar.png"
@@ -86,11 +94,14 @@ export function SideBar() {
             </h3>
             <ScrollArea>
               {chats.map((chat) => {
+                const url = `/chat/${chat.id}`;
+
                 return (
                   <Link
                     key={chat.id}
-                    href={`chat/${chat.id}`}
-                    className="group h-10 p-2 flex items-center gap-2 rounded-lg transition-opacity duration-500 hover:bg-accent"
+                    href={url}
+                    className="group h-10 p-2 flex items-center gap-2 rounded-lg transition-opacity duration-500 hover:bg-accent aria-checked:bg-accent"
+                    aria-checked={pathname === url}
                   >
                     <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium group-hover:text-accent-foreground">
                       {chat.title}
